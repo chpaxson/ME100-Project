@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find video_stream_opencv)/launch/rtsp_stream.launch"/>
+    <node name="ped_detect" pkg="pedestrian_detection" type="ped_detect.py" required="true" />
+    <node name="notifier" pkg="pedestrian_detection" type="notifier.py" output="screen" required="true" />
+    <!-- <include file="$(find kiwibot)/launch/teleop.launch"/> -->
+</launch>

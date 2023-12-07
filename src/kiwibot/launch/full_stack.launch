@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find pedestrian_detection)/launch/ped_detect.launch"/>
+    <include file="$(find kiwibot)/launch/teleop.launch"/>
+</launch>
