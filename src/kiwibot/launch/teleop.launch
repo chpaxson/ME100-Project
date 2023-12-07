@@ -1,0 +1,4 @@
+<launch>
+    <node name="control" pkg="kiwibot" type="control.py" />
+    <node name="teleop" pkg="kiwibot" type="keyboard_teleop.py" output="screen" required="true" />
+</launch>
