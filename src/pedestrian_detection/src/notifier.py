@@ -3,8 +3,12 @@
 import rospy
 from std_msgs.msg import Float64MultiArray
 from notify_run import Notify
+from Adafruit_IO import Client, Data
 
 notify = Notify()
+aio = Client('chpaxson', 'aio_vWwC74oKX9AhulVovIljHrLYyxKw')
+print(aio.feeds())
+# aio.create_feed('people_detected')
 
 prev_notif_time = 0
 
@@ -23,6 +27,8 @@ def send_notification(confidence):
     msg = msg[:-2]
     notify.send(msg)
     print(msg)
+    # aio.create_data('people_detected', Data(value=human_count))
+    aio.send_data('people', human_count)
     prev_notif_time = rospy.get_time()
 
 def callback(message):
