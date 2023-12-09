@@ -5,6 +5,9 @@ import socket
 from time import sleep
 from kiwibot.msg import ctrl_vec
 
+
+throttle = 0.5
+
 def teleop():
     print("Starting server...")
     host = 'spectre.local'
@@ -38,24 +41,35 @@ def teleop():
         elif data[0] == "M":
             try:
                 # print(data)
+                data[1:].replace("M", " ")
                 vals = data[1:].split(" ")
                 print(vals)
-                translation[0] = -float(vals[1])
-                translation[1] = float(vals[2])
-                # Normalize translation vector
-                if np.linalg.norm(translation) > 0.0:
-                    translation = translation / np.linalg.norm(translation)
-                yaw = float(vals[3])
-                # rotation = -yaw
-                rotation = 0
-                msg.speed = np.linalg.norm(translation)
-                msg.dir = np.arctan2(translation[1], translation[0])
-                msg.rot_speed = rotation
+                msg.speed = throttle
+                msg.dir = float(parse_dir(vals[0]))
+                msg.rot_speed = 3 * float(vals[1])
             except:
                 print("Invalid data")
         pub.publish(msg)
     server_socket.shutdown(1)
     server_socket.close()
+
+def parse_dir(str):
+    if str == "E":
+        return 0
+    elif str == "NE":
+        return 45
+    elif str == "N":
+        return 90
+    elif str == "NW":
+        return 135
+    elif str == "W":
+        return 180
+    elif str == "SW":
+        return 225
+    elif str == "S":
+        return 270
+    elif str == "SE":
+        return 315
 
 
 if __name__ == '__main__':
