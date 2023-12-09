@@ -45,8 +45,15 @@ def teleop():
                 vals = data[1:].split(" ")
                 print(vals)
                 msg.speed = throttle
-                msg.dir = float(parse_dir(vals[0]))
-                msg.rot_speed = 3 * float(vals[1])
+
+                dir = parse_dir(vals[0])
+                if dir < 0:
+                    msg.speed = 0
+                    msg.dir = 0
+                else:
+                    msg.dir = dir
+                
+                msg.rot_speed = parse_rot(vals[1])
             except:
                 print("Invalid data")
         pub.publish(msg)
@@ -70,6 +77,16 @@ def parse_dir(str):
         return 270
     elif str == "SE":
         return 315
+    elif str == "X":
+        return -1
+    
+def parse_rot(str):
+    if str == "CW":
+        return -3
+    elif str == "CCW":
+        return 3
+    else:
+        return 0
 
 
 if __name__ == '__main__':
