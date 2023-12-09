@@ -9,14 +9,15 @@ from kiwibot.msg import ctrl_vec
 throttle = 0.5
 
 def teleop():
-    print("Starting server...")
-    host = 'spectre.local'
+    print('Starting server...')
+    # host = 'spectre.local'
+    host = '192.168.12.1'
     port = 10000
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
     server_socket.bind((host, port))
     server_socket.listen(5)
-    print("Listening for connections {host}:{port}")
+    print('Listening for connections {host}:{port}')
     client_socket, client_address = server_socket.accept()
 
     pub = rospy.Publisher('cmd_vel', ctrl_vec, queue_size=10)
@@ -30,60 +31,64 @@ def teleop():
         data = client_socket.recv(1024).decode('utf-8')
         if len(data) == 0:
             continue
-        elif data[0] == "Q":
-            print("Quitting...")
+        elif data[0] == 'Q':
+            print('Quitting...')
             client_socket.shutdown(1)
             client_socket.close()
-            msg.cmd = "stop"
+            msg.cmd = 'quit'
             pub.publish(msg)
             exit()
             break
-        elif data[0] == "M":
-            try:
-                # print(data)
-                data[1:].replace("M", " ")
-                vals = data[1:].split(" ")
-                print(vals)
-                msg.speed = throttle
+        elif data[0] == 'M':
+            # try:
+            print(data)
+            data[1:].replace('M', ' ')
+            vals = data[1:].split(' ')
+            print(vals)
+            msg.speed = throttle
 
-                dir = parse_dir(vals[0])
-                if dir < 0:
-                    msg.speed = 0
-                    msg.dir = 0
-                else:
-                    msg.dir = dir
-                
-                msg.rot_speed = parse_rot(vals[1])
-            except:
-                print("Invalid data")
+            dir = parse_dir(vals[1])
+            print(dir)
+            if dir < 0:
+                msg.speed = 0
+                msg.dir = 0
+            else:
+                msg.dir = dir
+            
+            msg.rot_speed = parse_rot(vals[2])
+            # except:
+            #     print('Invalid data')
         pub.publish(msg)
+        rate.sleep()
     server_socket.shutdown(1)
     server_socket.close()
 
-def parse_dir(str):
-    if str == "E":
+def parse_dir(dir_str):
+    # dir_str = str(dir_str)
+    if dir_str == 'E':
         return 0
-    elif str == "NE":
+    elif dir_str == 'NE':
         return 45
-    elif str == "N":
+    elif dir_str == 'N':
         return 90
-    elif str == "NW":
+    elif dir_str == 'NW':
         return 135
-    elif str == "W":
+    elif dir_str == 'W':
         return 180
-    elif str == "SW":
+    elif dir_str == 'SW':
         return 225
-    elif str == "S":
+    elif dir_str == 'S':
         return 270
-    elif str == "SE":
+    elif dir_str == 'SE':
         return 315
-    elif str == "X":
+    else:
         return -1
     
-def parse_rot(str):
-    if str == "CW":
+def parse_rot(dir_str):
+    # dir_str = str(dir_str)
+    if str == 'CW':
         return -3
-    elif str == "CCW":
+    elif str == 'CCW':
         return 3
     else:
         return 0
