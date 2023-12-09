@@ -28,13 +28,19 @@ def teleop():
         msg = ctrl_vec()
         
         # Wait for data from client (ESP32 motion controller)
-        data = client_socket.recv(1024).decode('utf-8')
+        data = client_socket.recv(2048).decode('utf-8')
         if len(data) == 0:
             continue
-        elif data[0] == 'Q':
+
+        elif 'Q' in data:
             print('Quitting...')
             client_socket.shutdown(1)
             client_socket.close()
+            msg.speed = 0
+            msg.dir = 0
+            msg.rot_speed = 0
+            pub.publish(msg)
+            msg = ctrl_vec()
             msg.cmd = 'quit'
             pub.publish(msg)
             exit()
@@ -42,20 +48,22 @@ def teleop():
         elif data[0] == 'M':
             # try:
             print(data)
-            data[1:].replace('M', ' ')
-            vals = data[1:].split(' ')
+            data.replace('M', ' ')
+            data.replace('\r\n', ' ')
+            vals = data.split(' ')
             print(vals)
             msg.speed = throttle
 
             dir = parse_dir(vals[1])
-            print(dir)
             if dir < 0:
                 msg.speed = 0
                 msg.dir = 0
             else:
                 msg.dir = dir
             
-            msg.rot_speed = parse_rot(vals[2])
+            # msg.rot_speed = parse_rot(vals[2])
+            msg.rot_speed = 0
+            print(msg.rot_speed)
             # except:
             #     print('Invalid data')
         pub.publish(msg)
@@ -66,29 +74,30 @@ def teleop():
 def parse_dir(dir_str):
     # dir_str = str(dir_str)
     if dir_str == 'E':
-        return 0
+        return 180
     elif dir_str == 'NE':
-        return 45
+        return 135
     elif dir_str == 'N':
         return 90
     elif dir_str == 'NW':
-        return 135
+        return 45
     elif dir_str == 'W':
-        return 180
+        return 0
     elif dir_str == 'SW':
-        return 225
+        return 315
     elif dir_str == 'S':
         return 270
     elif dir_str == 'SE':
-        return 315
+        return 225
     else:
         return -1
     
 def parse_rot(dir_str):
-    # dir_str = str(dir_str)
-    if str == 'CW':
+    dir_str = str(dir_str)
+    print(dir_str)
+    if 'CW' in dir_str:
         return -3
-    elif str == 'CCW':
+    elif 'CCW' in dir_str:
         return 3
     else:
         return 0
